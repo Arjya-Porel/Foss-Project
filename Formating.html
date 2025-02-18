@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Quiz Generator</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .flash-messages {
+            background-color: #ffdddd;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            color: #d9534f;
+        }
+
+        form {
+            margin-bottom: 20px;
+        }
+
+        input[type="file"], input[type="text"], button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        button {
+            background-color: #5cb85c;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #4cae4c;
+        }
+
+        .question {
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #5cb85c;
+            color: white;
+        }
+    </style>
+
+</head>
+<body>
+
+    <div class="container">
+        <h1>📄 PDF Quiz Generator</h1>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for message in messages %}
+                        <p>{{ message }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <!-- File Upload Form -->
+        <form action="{{ url_for('upload') }}" method="post" enctype="multipart/form-data">
+            <input type="file" name="file" accept=".pdf" required>
+            <button type="submit">Upload & Generate Quiz</button>
+        </form>
+
+        <!-- Quiz Questions Display -->
+        {% if questions %}
+            <h2>📝 Quiz Questions</h2>
+            <form action="{{ url_for('submit_quiz') }}" method="post">
+                <input type="hidden" name="topic" value="Uploaded PDF">
+                {% for question in questions %}
+                    <div class="question">
+                        <p><strong>{{ loop.index }}. {{ question['question'] }}</strong></p>
+
+                        {% if question['type'] == 'mcq' %}
+                            {% for choice in question['choices'] %}
+                                <label><input type="radio" name="q{{ loop.index }}" value="{{ choice }}"> {{ choice }}</label><br>
+                            {% endfor %}
+                        {% elif question['type'] == 'fill_blank' %}
+                            <input type="text" name="q{{ loop.index }}" placeholder="Type your answer">
+                        {% elif question['type'] == 'true_false' %}
+                            <label><input type="radio" name="q{{ loop.index }}" value="True"> True</label>
+                            <label><input type="radio" name="q{{ loop.index }}" value="False"> False</label>
+                        {% elif question['type'] == 'short_answer' %}
+                            <input type="text" name="q{{ loop.index }}" placeholder="Your short answer">
+                        {% endif %}
+                    </div>
+                {% endfor %}
+                <button type="submit">Submit Quiz</button>
+            </form>
+        {% endif %}
+
+        <!-- Results Section -->
+        {% if results %}
+            <h2>📊 Previous Quiz Results</h2>
+            <table>
+                <tr>
+                    <th>Topic</th>
+                    <th>Score</th>
+                </tr>
+                {% for result in results %}
+                    <tr>
+                        <td>{{ result[1] }}</td>
+                        <td>{{ result[2] }}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        {% endif %}
+    </div>
+
+</body>
+</html>
