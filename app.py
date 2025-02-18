@@ -158,25 +158,3 @@ def upload():
     questions = generate_questions(text)
     return render_template("index.html", questions=questions)
 
-# Quiz submission route
-@app.route("/submit_quiz", methods=["POST"])
-def submit_quiz():
-    topic = request.form.get("topic", "Uploaded PDF")
-    score = request.form.get("score", "0")
-    if not score.isdigit():
-        return "Invalid score input", 400
-
-    score = int(score)
-    save_result(topic, score)
-    prediction = predict_weak_area(score)
-    flash(f"Quiz submitted! Your weak area prediction: {prediction}")
-    return redirect(url_for("home"))
-
-# Results route
-@app.route("/results")
-def results():
-    results = get_results()
-    return render_template("index.html", results=results)
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
